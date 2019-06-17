@@ -8,13 +8,18 @@ package main
 
 import (
 	"flag"
+	"github.com/OGFris/itoplist-backend/database"
+	"github.com/OGFris/itoplist-backend/routes/api/article"
 	"github.com/OGFris/itoplist-backend/utils"
 	"github.com/buaazp/fasthttprouter"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/valyala/fasthttp"
 	"os"
 )
 
 func main() {
+	database.Init()
+
 	seed := flag.Bool("seed", false, "database seeder")
 	if *seed {
 		// Seed the database with fake info
@@ -27,6 +32,8 @@ func main() {
 	}
 
 	router := fasthttprouter.New()
+
+	router.POST("/api/article", article.Create)
 
 	s := &fasthttp.Server{
 		Handler:          router.Handler,
