@@ -10,6 +10,7 @@ import (
 	"flag"
 	"github.com/OGFris/itoplist-backend/database"
 	"github.com/OGFris/itoplist-backend/routes/api/article"
+	"github.com/OGFris/itoplist-backend/routes/api/auth"
 	"github.com/OGFris/itoplist-backend/utils"
 	"github.com/buaazp/fasthttprouter"
 	_ "github.com/joho/godotenv/autoload"
@@ -34,6 +35,8 @@ func main() {
 	router := fasthttprouter.New()
 
 	router.POST("/api/article", article.Create)
+	router.POST("/api/auth/signin", auth.Signin)
+	router.POST("/api/auth/signup", auth.Signup)
 
 	s := &fasthttp.Server{
 		Handler:          router.Handler,
