@@ -11,8 +11,17 @@ import "time"
 // Article will be stored on Elasticsearch.
 type Article struct {
 	Title       string    `json:"title"`
+	Type        int       `json:"type"`
 	Description string    `json:"description"`
 	Content     string    `json:"content"`
 	Hidden      bool      `json:"hidden"`
 	Date        time.Time `json:"date"`
+	LinkedId    int       `json:"linked_id"`
 }
+
+const (
+	ArticleType = iota
+	VsType
+	QuizType
+	TopType
+)

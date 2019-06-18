@@ -36,7 +36,7 @@ func Init() {
 
 		sql := os.Getenv("DB_USER") + ":" +
 			os.Getenv("DB_PASSWORD") + "@tcp(" +
-			os.Getenv("DB_ADDRESS") + ":3306)/" +
+			os.Getenv("DB_ADDRESS") + ")/" +
 			os.Getenv("DB_NAME")
 
 		d, err := gorm.Open("mysql", sql+"?charset=utf8&parseTime=True&loc=Local")
