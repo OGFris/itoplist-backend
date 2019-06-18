@@ -43,7 +43,9 @@ func Init() {
 		utils.PanicError(err)
 		Instance = d
 
-		d.AutoMigrate()
+		d.AutoMigrate(
+			&User{},
+		)
 
 	}
 
