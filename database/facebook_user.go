@@ -15,6 +15,11 @@ type FacebookUser struct {
 	Email    string `gorm:"Type:varchar(255);Column:email;NOT NULL" json:"email"`
 }
 
+func (u *FacebookUser) ID() uint {
+
+	return u.Model.ID
+}
+
 func (u *FacebookUser) JWT() (token string, err error) {
 	key := os.Getenv("JWT_KEY")
 

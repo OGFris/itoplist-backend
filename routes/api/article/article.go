@@ -15,7 +15,8 @@ import (
 )
 
 func Create(ctx *fasthttp.RequestCtx) {
-	if !database.RequireAuth(ctx) {
+	allowed, _, user := database.RequireAuth(ctx, database.ModeratorRole)
+	if !allowed {
 		ctx.Error("please signin to do this", http.StatusUnauthorized)
 
 		return
@@ -29,6 +30,7 @@ func Create(ctx *fasthttp.RequestCtx) {
 		Content:     string(ctx.FormValue("title")),
 		Hidden:      hidden,
 		Date:        time.Now(),
+		AuthorId:    int(user.ID()),
 	}
 
 	r, err := database.Elastic.Index().Index("articles").OpType("_doc").BodyJson(a).Do(context.Background())

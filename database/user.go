@@ -26,11 +26,22 @@ type User struct {
 	Role            int    `gorm:"Type:int(11);Column:role;NOT NULL;Default:0" json:"role"`
 }
 
+type UserInterface interface {
+	JWT() (string, error)
+	ByJWT(token string) error
+	ID() uint
+}
+
 const (
 	NormalRole = iota
 	ModeratorRole
 	AdminRole
 )
+
+func (u *User) ID() uint {
+
+	return u.Model.ID
+}
 
 func (u *User) JWT() (string, error) {
 	key := os.Getenv("JWT_KEY")
@@ -73,17 +84,36 @@ func (u *User) ByJWT(token string) error {
 	return errors.New("invalid token")
 }
 
-func RequireAuth(ctx *fasthttp.RequestCtx) bool {
+func RequireAuth(ctx *fasthttp.RequestCtx, permission int) (allowed bool, authType int, u UserInterface) {
 	facebookUser := &FacebookUser{}
 	user := &User{}
 
 	err := user.ByJWT(string(ctx.Request.Header.Cookie("jwt")))
 	err2 := facebookUser.ByJWT(string(ctx.Request.Header.Cookie("jwt")))
 
+	// TODO: I'll PROBABLY have to replace all these bool statements with a switch case later.
 	if err != nil && err2 != nil {
 
-		return false
+		return false, authType, u
 	}
 
-	return true
+	if err != nil && err2 == nil {
+		authType = 1
+		u = facebookUser
+	} else {
+		u = user
+		authType = 0
+	}
+
+	if permission != 0 && authType != 0 {
+
+		return false, authType, u
+	}
+
+	if user.Role >= permission {
+
+		return true, authType, u
+	}
+
+	return false, authType, u
 }
