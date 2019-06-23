@@ -45,16 +45,15 @@ func Signin(ctx *fasthttp.RequestCtx) {
 				return
 			}
 
-			ctx.Response.SetStatusCode(http.StatusOK)
-			// TODO: Return the jwt token.
-			_, err = ctx.Write(bytes)
-			if err != nil {
-				ctx.Error("unexpected error occurred. Error 005", http.StatusInternalServerError)
-				log.Fatalln(err)
+			cookie := fasthttp.AcquireCookie()
 
-				return
-			}
+			cookie.SetKey("jwt")
+			jwt, err := user.JWT()
+			utils.PanicError(err)
+			cookie.SetValue(jwt)
 
+			ctx.Response.Header.SetCookie(cookie)
+			ctx.Success("application/json", bytes)
 		} else {
 			ctx.Error("email and/or password were not correct", http.StatusBadRequest)
 

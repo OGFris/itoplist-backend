@@ -6,6 +6,13 @@
 
 package database
 
+import (
+	"errors"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
+	"os"
+)
+
 type User struct {
 	Model
 	FirstName       string `gorm:"Type:varchar(255);Column:first_name;NOT NULL"`
@@ -23,3 +30,44 @@ const (
 	ModeratorRole
 	AdminRole
 )
+
+func (u *User) JWT() (string, error) {
+	key := os.Getenv("JWT_KEY")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":   u.ID,
+		"type": 0,
+	})
+
+	return token.SignedString([]byte(key))
+}
+
+func (u *User) ByJWT(token string) error {
+	key := os.Getenv("JWT_KEY")
+
+	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(key), nil
+	})
+
+	if err != nil {
+		return errors.New("invalid token")
+	}
+
+	if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
+		id := uint(claims["id"].(float64))
+		authType := claims["type"].(int)
+		if authType != 0 {
+			return errors.New("invalid token")
+		}
+
+		err := Instance.First(&u, &User{Model: Model{ID: id}}).Error
+
+		return err
+	}
+
+	return errors.New("invalid token")
+}

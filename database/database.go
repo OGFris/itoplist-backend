@@ -45,6 +45,7 @@ func Init() {
 
 		d.AutoMigrate(
 			&User{},
+			&FacebookUser{},
 		)
 
 	}
