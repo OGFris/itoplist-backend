@@ -9,16 +9,19 @@ package article
 import (
 	"context"
 	"github.com/OGFris/itoplist-backend/database"
-	"github.com/OGFris/itoplist-backend/utils"
 	"github.com/valyala/fasthttp"
 	"net/http"
-	"strconv"
 	"time"
 )
 
 func Create(ctx *fasthttp.RequestCtx) {
-	hidden, err := strconv.ParseBool("hidden")
-	utils.PanicError(err)
+	if !database.RequireAuth(ctx) {
+		ctx.Error("please signin to do this", http.StatusUnauthorized)
+
+		return
+	}
+
+	hidden := ctx.Request.PostArgs().GetBool("hidden")
 
 	a := database.Article{
 		Title:       string(ctx.FormValue("title")),

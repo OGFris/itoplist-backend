@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/valyala/fasthttp"
 	"os"
 )
 
@@ -70,4 +71,19 @@ func (u *User) ByJWT(token string) error {
 	}
 
 	return errors.New("invalid token")
+}
+
+func RequireAuth(ctx *fasthttp.RequestCtx) bool {
+	facebookUser := &FacebookUser{}
+	user := &User{}
+
+	err := user.ByJWT(string(ctx.Request.Header.Cookie("jwt")))
+	err2 := facebookUser.ByJWT(string(ctx.Request.Header.Cookie("jwt")))
+
+	if err != nil && err2 != nil {
+
+		return false
+	}
+
+	return true
 }
