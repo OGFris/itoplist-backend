@@ -46,6 +46,7 @@ func main() {
 	router := fasthttprouter.New()
 
 	router.POST("/api/article", article.Create)
+	router.POST("/api/article/update", article.Update)
 	router.POST("/api/auth/signin", auth.Signin)
 	router.POST("/api/auth/signup", auth.Signup)
 	router.GET("/api/auth/facebook/login", auth.FacebookLogin)

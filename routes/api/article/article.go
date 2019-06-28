@@ -26,8 +26,8 @@ func Create(ctx *fasthttp.RequestCtx) {
 
 	a := database.Article{
 		Title:       string(ctx.FormValue("title")),
-		Description: string(ctx.FormValue("title")),
-		Content:     string(ctx.FormValue("title")),
+		Description: string(ctx.FormValue("description")),
+		Content:     string(ctx.FormValue("content")),
 		Hidden:      hidden,
 		Date:        time.Now(),
 		AuthorId:    int(user.ID()),
@@ -40,5 +40,34 @@ func Create(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	ctx.Success("text/plain", []byte(r.Id))
+	ctx.Success("text/plain", []byte(r.Result))
+}
+
+func Update(ctx *fasthttp.RequestCtx) {
+	allowed, _, _ := database.RequireAuth(ctx, database.ModeratorRole)
+	if !allowed {
+		ctx.Error("please signin to do this", http.StatusUnauthorized)
+
+		return
+	}
+
+	articleId := string(ctx.Request.PostArgs().Peek("article_id"))
+	title := string(ctx.Request.PostArgs().Peek("title"))
+	description := string(ctx.Request.PostArgs().Peek("description"))
+	content := string(ctx.Request.PostArgs().Peek("content"))
+	hidden := ctx.Request.PostArgs().GetBool("hidden")
+
+	r, err := database.Elastic.Update().Index("articles").Id(articleId).Doc(map[string]interface{}{
+		"title":       title,
+		"description": description,
+		"content":     content,
+		"hidden":      hidden,
+	}).Do(context.Background())
+	if err != nil {
+		ctx.Error("received an error while creating article on database", http.StatusInternalServerError)
+
+		return
+	}
+
+	ctx.Success("text/plain", []byte(r.Result))
 }
