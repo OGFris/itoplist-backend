@@ -9,6 +9,7 @@ package article
 import (
 	"context"
 	"github.com/OGFris/itoplist-backend/database"
+	"github.com/json-iterator/go"
 	"github.com/valyala/fasthttp"
 	"net/http"
 	"time"
@@ -70,4 +71,22 @@ func Update(ctx *fasthttp.RequestCtx) {
 	}
 
 	ctx.Success("text/plain", []byte(r.Result))
+}
+
+func Latest(ctx *fasthttp.RequestCtx) {
+	r, err := database.Elastic.Search().Index("articles").Sort("date", true).Do(context.Background())
+	if err != nil {
+		ctx.Error("received an error while search for new articles", http.StatusInternalServerError)
+
+		return
+	}
+
+	bytes, err := jsoniter.Marshal(r.Hits.Hits)
+	if err != nil {
+		ctx.Error("received an error while processing articles data", http.StatusInternalServerError)
+
+		return
+	}
+
+	ctx.Success("application/json", bytes)
 }
