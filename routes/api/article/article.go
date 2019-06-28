@@ -23,15 +23,14 @@ func Create(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	hidden := ctx.Request.PostArgs().GetBool("hidden")
-
 	a := database.Article{
 		Title:       string(ctx.FormValue("title")),
 		Description: string(ctx.FormValue("description")),
 		Content:     string(ctx.FormValue("content")),
-		Hidden:      hidden,
+		Hidden:      ctx.Request.PostArgs().GetBool("hidden"),
 		Date:        time.Now(),
 		AuthorId:    int(user.ID()),
+		Type:        ctx.Request.PostArgs().GetUintOrZero("type"),
 	}
 
 	r, err := database.Elastic.Index().Index("articles").OpType("_doc").BodyJson(a).Do(context.Background())
