@@ -33,7 +33,7 @@ func Create(ctx *fasthttp.RequestCtx) {
 		Type:        ctx.Request.PostArgs().GetUintOrZero("type"),
 	}
 
-	r, err := database.Elastic.Index().Index("articles").OpType("_doc").BodyJson(a).Do(context.Background())
+	r, err := database.Elastic.Index().Index("articles").Type("article").BodyJson(a).Do(context.Background())
 	if err != nil {
 		ctx.Error("received an error while creating article on database", http.StatusInternalServerError)
 
@@ -75,7 +75,7 @@ func Update(ctx *fasthttp.RequestCtx) {
 func Latest(ctx *fasthttp.RequestCtx) {
 	r, err := database.Elastic.Search().Index("articles").Sort("date", true).Do(context.Background())
 	if err != nil {
-		ctx.Error("received an error while search for new articles", http.StatusInternalServerError)
+		ctx.Error("received an error while search for new articles, "+err.Error(), http.StatusInternalServerError)
 
 		return
 	}

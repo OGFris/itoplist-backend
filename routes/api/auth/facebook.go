@@ -18,18 +18,18 @@ import (
 	"os"
 )
 
-var facebook common.Provider
+var Fb common.Provider
 
-func init() {
+func InitProviders() {
 	var err error
 
-	facebook, err = gomniauth.Provider("facebook")
+	Fb, err = gomniauth.Provider("facebook")
 	utils.PanicError(err)
 }
 
 func FacebookLogin(ctx *fasthttp.RequestCtx) {
 	state := gomniauth.NewState("after", "success")
-	authUrl, err := facebook.GetBeginAuthURL(state, nil)
+	authUrl, err := Fb.GetBeginAuthURL(state, nil)
 	if err != nil {
 		ctx.Error("unexpected error", http.StatusInternalServerError)
 
@@ -47,14 +47,14 @@ func FacebookCallback(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	c, err := facebook.CompleteAuth(omap)
+	c, err := Fb.CompleteAuth(omap)
 	if err != nil {
 		ctx.Error("unexpected error", http.StatusInternalServerError)
 
 		return
 	}
 
-	u, userErr := facebook.GetUser(c)
+	u, userErr := Fb.GetUser(c)
 	if userErr != nil {
 		ctx.Error("unexpected error", http.StatusInternalServerError)
 

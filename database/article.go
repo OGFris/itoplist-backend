@@ -17,7 +17,6 @@ type Article struct {
 	Hidden      bool      `json:"hidden"`
 	Date        time.Time `json:"date"`
 	AuthorId    int       `json:"author_id"`
-	LinkedId    int       `json:"linked_id"`
 }
 
 const (

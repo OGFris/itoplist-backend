@@ -12,7 +12,7 @@ import (
 	"github.com/OGFris/itoplist-backend/utils"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	"github.com/olivere/elastic/v7"
+	"github.com/olivere/elastic"
 	"net/http"
 	"os"
 	"time"
@@ -72,6 +72,8 @@ func Init() {
 			body := `
 			{
 				"settings" : {
+					"number_of_shards": 1,
+					"number_of_replicas": 0,
 					"analysis" : {
 						"analyzer" : {
 							"default" : {
@@ -80,7 +82,19 @@ func Init() {
 							}
 						}
 					}
-				}
+				},
+				"mappings": {
+			    	"article": {
+			      		"properties": {
+			        	"title": { "type": "text"  },
+			        	"type": { "type": "integer"  },
+			        	"description": { "type": "text" },
+						"content": { "type": "text" },
+						"hidden": { "type": "boolean" },
+			        	"date":  { "type": "date"},
+						"author_id": { "type": "integer" }
+			    	}
+			  	}
 			}`
 
 			result, err := Elastic.CreateIndex("articles").BodyString(body).Do(context.Background())
